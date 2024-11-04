@@ -26,7 +26,7 @@ const init = async () => {
       case "View all roles":
         viewRoles();
         break;
-      case "View All Employees":
+      case "View all Employees":
         viewEmployees();
         break;
       case "Add a department":
@@ -46,9 +46,6 @@ const init = async () => {
         break;
     }
   }
-  // if (mainMenu.action === "Add a department") {
-  //   addDepartment();
-  // created a switch statement instead }
 };
 
 async function viewDepartments() {
@@ -98,7 +95,7 @@ async function addRole() {
     {
       type: "input",
       name: "roleDepartment",
-      message: "What department does this role belong to?",
+      message: "What department ID does this role belong to?",
     },
   ]);
   await pool.query(
@@ -128,7 +125,7 @@ async function addEmployee() {
     {
       type: "input",
       name: "managerId",
-      message: "Does this employee have a manager id?",
+      message: "Does this employee have a manager ID?",
     },
   ]);
   await pool.query(
@@ -145,7 +142,7 @@ async function addEmployee() {
 
 async function updateEmployee() {
   const employeeData = await pool.query(
-    "Select id, first_name, last_name FROM employee"
+    "SELECT id, first_name, last_name FROM employee"
   );
   const employees = employeeData.rows;
 
