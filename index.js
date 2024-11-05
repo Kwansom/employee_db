@@ -131,7 +131,7 @@ async function addEmployee() {
   ]);
   await pool.query(
     "INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)",
-    [response.first_name, response.last_name, response.roleId, response.manager]
+    [response.first_name, response.last_name, response.roleId, response.mana]
   );
   init();
 }

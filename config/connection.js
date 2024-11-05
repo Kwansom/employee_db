@@ -1,17 +1,16 @@
-const { Pool } = require("pg"); // interact with database 
+const { Pool } = require("pg"); // interact with database
 require("dotenv").config(); // refers to env configuration
 
+const pool = new Pool({
+  user: process.env.USER,
+  password: process.env.PASSWORD,
+  // host: process.env.HOST,
+  database: process.env.DB_NAME,
+});
 
-const pool = new Pool(
-  {
-    user: process.env.DB_NAME,
-    password: process.env.PASSWORD,
-    host: process.env.HOST,
-    database: "employees_db",
-  },
-  console.log("Connected to the employees_db database")
-);
-
-pool.connect();
+pool
+  .connect()
+  .then(() => console.log("Connected to the employees_db database"))
+  .catch((err) => console.error("Connection error", err.stack));
 
 module.exports = pool;
