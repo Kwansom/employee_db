@@ -95,7 +95,7 @@ async function addRole() {
     {
       type: "input",
       name: "roleDepartment",
-      message: "What department ID does this role belong to?",
+      message: "What department does this role belong to?",
     },
   ]);
   await pool.query(
@@ -120,22 +120,18 @@ async function addEmployee() {
     {
       type: "input",
       name: "roleId",
-      message: "What is this employee's role ID?",
+      message: "What is this employee's role?",
     },
     {
-      type: "input",
-      name: "managerId",
-      message: "Does this employee have a manager ID?",
+      type: "list",
+      name: "manager",
+      message: "Does this employee have a manager?",
+      choices: ["J Kwon", "Meek Moses", "Daniel Quinn", "Holly Bahn"],
     },
   ]);
   await pool.query(
     "INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)",
-    [
-      response.first_name,
-      response.last_name,
-      response.roleId,
-      response.managerId,
-    ]
+    [response.first_name, response.last_name, response.roleId, response.manager]
   );
   init();
 }
