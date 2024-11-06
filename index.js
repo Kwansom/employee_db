@@ -127,34 +127,67 @@ async function addRole() {
 }
 
 async function addEmployee() {
-  const response = await inquirer.prompt([
-    {
-      type: "input",
-      name: "first_name",
-      message: "What is the employee's first name?",
-    },
-    {
-      type: "input",
-      name: "last_name",
-      message: "What is the employee's last name?",
-    },
-    {
-      type: "input",
-      name: "roleId",
-      message: "What is this employee's role?",
-    },
-    {
-      type: "list",
-      name: "manager",
-      message: "Does this employee have a manager?",
-      choices: ["J Kwon", "Meek Moses", "Daniel Quinn", "Holly Bahn"],
-    },
-  ]);
-  await pool.query(
-    "INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)",
-    [response.first_name, response.last_name, response.roleId, response.mana]
-  );
-  init();
+  try {
+    const employeeResults = await pool.query(
+      "SELECT id, CONCAT(first_name, '', last_name) AS name FROM employee"
+    );
+    const employeeChoices = employeeResults.rows.map((employee) => ({
+      name: employee.name,
+      value: employee.id,
+    }));
+
+    const rolesResult = await pool.query("SELECT id, title FROM role");
+    const roleChoices = rolesResult.rows.map((role) => ({
+      name: role.title,
+      value: role.id,
+    }));
+
+    employeeChoices.unshift({
+      name: "None",
+      value: null,
+    });
+
+    const response = await inquirer.prompt([
+      {
+        type: "input",
+        name: "first_name",
+        message: "What is the employee's first name?",
+      },
+      {
+        type: "input",
+        name: "last_name",
+        message: "What is the employee's last name?",
+      },
+      {
+        type: "list",
+        name: "roleId",
+        message: "What is the employee's role?",
+        choices: roleChoices,
+      },
+      {
+        type: "list",
+        name: "manager",
+        message: "Does this employee have a manager?",
+        choices: employeeChoices,
+      },
+    ]);
+
+    await pool.query(
+      "INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)",
+      [
+        response.first_name,
+        response.last_name,
+        response.roleId,
+        response.manager,
+      ]
+    );
+    console.log(
+      `${response.first_name} ${response.last_name} added successfully.`
+    );
+    init();
+  } catch (error) {
+    console.error("Error adding employee:", error);
+  }
 }
 
 async function updateEmployee() {
