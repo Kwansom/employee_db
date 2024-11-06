@@ -26,7 +26,7 @@ const init = async () => {
       case "View all roles":
         viewRoles();
         break;
-      case "View all Employees":
+      case "View all employees":
         viewEmployees();
         break;
       case "Add a department":
@@ -81,28 +81,49 @@ async function addDepartment() {
 }
 
 async function addRole() {
-  const response = await inquirer.prompt([
-    {
-      type: "input",
-      name: "roleTitle",
-      message: "What is the title of the role?",
-    },
-    {
-      type: "input",
-      name: "roleSalary",
-      message: "What is the salary for this role?",
-    },
-    {
-      type: "input",
-      name: "roleDepartment",
-      message: "What department does this role belong to?",
-    },
-  ]);
-  await pool.query(
-    "INSERT INTO role(title, salary, department_id) VALUES($1, $2, $3)",
-    [response.roleTitle, response.roleSalary, response.roleDepartment]
-  );
-  init();
+  try {
+    // Query departments from the database
+    const departmentsResult = await pool.query(
+      "SELECT id, name FROM department"
+    );
+    // Create the choices array for list prompt
+    const departmentChoices = departmentsResult.rows.map((department) => ({
+      name: department.name,
+      value: department.id,
+    }));
+    const response = await inquirer.prompt([
+      {
+        type: "input",
+        name: "roleTitle",
+        message: "What is the title of the role?",
+      },
+      {
+        type: "input",
+        name: "roleSalary",
+        message: "What is the salary for this role?",
+      },
+
+      // query list of role //
+      {
+        type: "list",
+        name: "roleDepartment",
+        message: "What department does this role belong to?",
+        choices: departmentChoices,
+      },
+    ]);
+
+    await pool.query(
+      "INSERT INTO role(title, salary, department_id) VALUES($1, $2, $3)",
+      [response.roleTitle, response.roleSalary, response.roleDepartment]
+    );
+
+    console.log(
+      `${response.roleTitle} role added successfully to department ${response.roleDepartment}.`
+    );
+    init();
+  } catch (error) {
+    console.error("Error adding role:", error);
+  }
 }
 
 async function addEmployee() {
