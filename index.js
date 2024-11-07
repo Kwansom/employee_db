@@ -55,13 +55,30 @@ async function viewDepartments() {
 }
 
 async function viewRoles() {
-  const data = await pool.query("SELECT * FROM role");
+  // const data = await pool.query("SELECT * FROM role");
+  const data =
+    await pool.query(`SELECT role.id, role.title, role.salary, department.name AS department_name
+  FROM role
+  LEFT JOIN department ON role.department_id = department.id`);
+
   console.table(data.rows);
   init();
 }
 
 async function viewEmployees() {
-  const data = await pool.query("SELECT * FROM employee");
+  // const data = await pool.query("SELECT * FROM employee");
+  const data = await pool.query(`SELECT 
+        employee.first_name AS "First Name",
+        employee.last_name AS "Last Name",
+        role.title AS "Role",
+        role.salary AS "Salary",
+        department.name AS "Department",
+        manager.first_name || ' ' || manager.last_name AS "Manager"
+      FROM employee
+      LEFT JOIN role ON employee.role_id = role.id
+      LEFT JOIN department ON role.department_id = department.id
+      LEFT JOIN employee manager ON employee.manager_id = manager.id
+    `);
   console.table(data.rows);
   init();
 }
