@@ -38,7 +38,7 @@ const init = async () => {
       case "Add an employee":
         addEmployee();
         break;
-      case "Update an empolyee role":
+      case "Update an employee role":
         updateEmployee();
         break;
       case "Exit":
@@ -129,7 +129,7 @@ async function addRole() {
 async function addEmployee() {
   try {
     const employeeResults = await pool.query(
-      "SELECT id, CONCAT(first_name, '', last_name) AS name FROM employee"
+      "SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee"
     );
     const employeeChoices = employeeResults.rows.map((employee) => ({
       name: employee.name,
@@ -191,42 +191,55 @@ async function addEmployee() {
 }
 
 async function updateEmployee() {
-  // Query to retrieve employee data (rows) from employee table
-  const employeeData = await pool.query(
-    "SELECT id, first_name, last_name FROM employee"
-  );
-  const employees = employeeData.rows;
-  // Map method to create new array of objects stored in employeeOptions
-  // The new object will have first and last name and id value.
-  const employeeOptions = employees.map((data) => ({
-    name: `${data.first_name} ${data.last_name}`,
-    value: data.id,
-  }));
+  try {
+    const employeeResults = await pool.query(
+      "SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee"
+    );
 
-  //Chosen employee's ID is stored upon selection.
-  const { employeeId } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "employeeId",
-      message: "Which employee's role do you want to update?",
-      choices: employeeOptions,
-    },
-  ]);
-  // Input of new role Id is stored in variable
-  const { newRoleId } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "newRoleId",
-      message: "Enter the new role ID for this employee",
-    },
-  ]);
+    // console.log("Employee Results:", employeeResults.rows);
 
-  // SQL update query to change the role_id of the specified {employeeId} to {newRoleId}
-  await pool.query("UPDATE employee SET role_id = $1 WHERE id = $2", [
-    newRoleId,
-    employeeId,
-  ]);
-  init();
+    const employeeChoices = employeeResults.rows.map((employee) => ({
+      name: employee.name,
+      value: employee.id,
+    }));
+
+    // console.log("Employee Choices:", employeeChoices);
+
+    const rolesResult = await pool.query("SELECT id, title FROM role");
+    const roleChoices = rolesResult.rows.map((role) => ({
+      name: role.title,
+      value: role.id,
+    }));
+    //Chosen employee's ID is stored upon selection.
+    const { employeeId } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "employeeId",
+        message: "Which employee do you want to update?",
+        choices: employeeChoices,
+      },
+    ]);
+    // Input of new role Id is stored in variable
+    const { newRoleId } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "newRoleId",
+        message: "Select the employee's new role.",
+        choices: roleChoices,
+      },
+    ]);
+
+    // SQL update query to change the role_id of the specified {employeeId} to {newRoleId}
+    await pool.query("UPDATE employee SET role_id = $1 WHERE id = $2", [
+      newRoleId,
+      employeeId,
+    ]);
+    console.log("Employee role updated successfully");
+
+    init();
+  } catch (error) {
+    console.error("Error updating employee:", error);
+  }
 }
 
 const exitFunction = () => {
